@@ -1,4 +1,4 @@
-package software.ulpgc.adventofcode;
+package software.aoc.day01.b;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

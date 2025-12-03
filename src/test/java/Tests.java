@@ -1,5 +1,5 @@
 import org.junit.Test;
-import software.ulpgc.adventofcode.Dial;
+import software.aoc.day01.a.Dial;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,5 +70,13 @@ public class Tests {
 
         assertEquals(1, firstCount);
         assertEquals(firstCount, secondCount);
+    }
+
+    @Test
+    public void testCountZeros() {
+        ArrayList<String> movements = createMovements("L250", "R550", "L223", "R131", "L411");
+        Dial dial = new Dial(movements);
+
+        assertEquals(17, dial.getZeros());
     }
 }
