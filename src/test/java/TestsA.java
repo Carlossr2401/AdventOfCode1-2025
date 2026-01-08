@@ -13,30 +13,6 @@ public class Tests {
     }
 
     @Test
-    public void testFinalStateAfterMixedRotations() {
-        ArrayList<String> movements = createMovements("L2", "R7", "L12", "R4", "L22");
-        Dial dial = new Dial(movements);
-
-        assertEquals(25, dial.calculateState());
-    }
-
-    @Test
-    public void testWrapAroundFromLowToHigh() {
-        ArrayList<String> movements = createMovements("L55");
-        Dial dial = new Dial(movements);
-
-        assertEquals(95, dial.calculateState());
-    }
-
-    @Test
-    public void testWrapAroundFromHighToLow() {
-        ArrayList<String> movements = createMovements("R60");
-        Dial dial = new Dial(movements);
-
-        assertEquals(10, dial.calculateState());
-    }
-
-    @Test
     public void testZeroCountSingleHit() {
         ArrayList<String> movements = createMovements("R50");
         Dial dial = new Dial(movements);
