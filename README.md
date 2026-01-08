@@ -1,68 +1,91 @@
 # Advent of Code 2025 - Day 1: Secret Entrance
 
-Este proyecto contiene la solución para el **Día 1** del Advent of Code 2025, desarrollado en **Java**. El problema consiste en simular el mecanismo de una caja fuerte (un dial giratorio) para encontrar la contraseña correcta basándose en una serie de instrucciones de rotación.
+Este proyecto contiene la solución para el **Día 1** del Advent of Code 2025. El objetivo es descifrar la contraseña de una caja fuerte simulando su mecanismo de dial giratorio.
 
-## Descripción del Problema
+## Diseño y Arquitectura
 
-Los Elfos necesitan decorar el Polo Norte, pero la contraseña de la entrada secreta ha cambiado. Para abrir la puerta, debemos descifrar la combinación de una caja fuerte siguiendo una lista de instrucciones de rotación (ej. `L68`, `R48`).
+En este proyecto se intenta aplicar los principios SOLID y Clean Code para resolver el problema. Además se intenta aplicar patrones de diseño para resolver los diferentes problemas del AOC2025.
 
-El dial tiene números del 0 al 99.
+### 1. Principios SOLID
 
-- **L (Left)**: Gira hacia números menores (antihorario).
-- **R (Right)**: Gira hacia números mayores (horario).
-- El dial comienza en la posición **50**.
+El diseño se adhiere principalmente a los siguientes principios:
 
-### Parte 1
+- **Single Responsibility Principle (SRP)**: Cada clase tiene una responsabilidad única y claramente definida.
+  - `FileInstructionReader`: Se encarga **únicamente** de la persistencia/lectura de datos. Desconoce la lógica de negocio.
+  - `Dial`: Encapsula la **lógica de dominio** (el comportamiento de la caja fuerte). Desconoce el origen de los datos.
+  - `Solver`: **Coordinador** del caso de uso. Orquesta la interacción entre la lectura de datos y el dominio para producir una solución.
+  - `Main`: Punto de entrada minimalista. Solo es responsable de iniciar la aplicación invocando al `Solver`.
+- **Dependency Inversion Principle (DIP)**: `Solver` no depende de la clase concreta `FileInstructionReader`, sino de la abstracción `InstructionReader`. Esto permite cambiar el origen de los datos (archivo, base de datos, API) sin tocar la lógica de resolución.
+- **Open/Closed Principle**: Gracias a la interfaz `InstructionReader`, el sistema está abierto a la extensión (nuevas formas de leer datos) pero cerrado a la modificación (`Solver` no cambia).
 
-La contraseña es el número de veces que el dial termina apuntando al **0** _después_ de completar cada rotación de la lista.
+### 2. Clean Code (Código Limpio)
 
-### Parte 2
+Se han seguido prácticas de Clean Code para asegurar que el código sea autoexplicativo:
 
-Debido a nuevos protocolos de seguridad ("método 0x434C49434B"), la contraseña es el número de veces que el dial apunta al **0** en _cualquier momento_, es decir, contando cada "clic" individual durante la rotación, no solo al final.
+- **Nombres Expresivos**: Variables y métodos como `applyMovement`, `zeroCount` o `movements` revelan claramente su intención sin necesidad de comentarios.
+- **Funciones Pequeñas**: Métodos como `parseValue` extraen lógica compleja de bajo nivel, manteniendo el flujo principal de `applyMovement` legible y de alto nivel.
+- **Evitar "Magic Numbers"**: El uso de constantes numéricas se explica por el contexto del dominio (ej. módulo 100 para un dial de 0-99).
+
+### 3. Gestión del Flujo de Datos
+
+El flujo de información es lineal y unidireccional, simplificando la trazabilidad:
+
+1.  **Input (I/O)**: `InstructionReader` (implementado por `FileInstructionReader`) provee la lista de instrucciones.
+2.  **Procesamiento (Domain)**: `Dial` recibe la lista inmutable de instrucciones y calcula el resultado.
+3.  **Output**: `Solver` orquesta el proceso y devuelve la solución final.
+
+### 4. Estructuras de Datos y Algoritmos
+
+- **`List<String>`**: Se eligió `ArrayList` para almacenar las instrucciones debido a que el orden de ejecución es crítico y el acceso secuencial es performante.
+- **Aritmética Modular**: La fórmula `(state + valor + 100) % 100` maneja el dial circular.
+- **Record**: `FileInstructionReader` es un `record` inmutable.
+
+### 5. Diagrama de Clases
+
+```mermaid
+classDiagram
+    class Main {
+        +main() void$
+    }
+
+    class Solver {
+        -reader: InstructionReader
+        +Solver(reader: InstructionReader)
+        +solve() int
+    }
+
+    class InstructionReader {
+        <<Interface>>
+        +readAllInstructions() List~String~
+    }
+
+    class FileInstructionReader {
+        <<Record>>
+        +filePath: String
+        +readAllInstructions() List~String~
+    }
+
+    class Dial {
+        -movements: List~String~
+        -state: int
+        -zeroCount: int
+        +Dial(movements: List~String~)
+        +getZeros() int
+        -applyAllMovements() void
+        -applyMovement(movement: String) void
+        -parseValue(movement: String) int
+    }
+
+    Main ..> Solver : crea
+    Main ..> FileInstructionReader : crea
+    Solver --> InstructionReader : depende de
+    FileInstructionReader ..|> InstructionReader : implementa
+    Solver ..> Dial : usa
+```
 
 ## Estructura del Proyecto
 
-El código está organizado en paquetes para separar las soluciones de cada parte:
+Organización por paquetes para separar las dos partes del desafío:
 
-- `src/main/java/software/aoc/day01/a`: Solución para la **Parte 1**.
-- `src/main/java/software/aoc/day01/b`: Solución para la **Parte 2**.
-
-Ambos paquetes siguen la misma estructura de clases:
-
-- **`Main.java`**: Punto de entrada de la aplicación. Orquesta la lectura del archivo y la ejecución de la lógica del dial.
-- **`FileInstructionReader.java`**: Se encarga exclusivamente de leer el archivo de entrada y procesarlo en una lista de instrucciones.
-- **`Dial.java`**: Contiene la lógica de negocio del dial, manteniendo su estado y calculando los movimientos.
-
-## Principios de Ingeniería de Software
-
-El desarrollo de esta solución se ha guiado por principios sólidos de Programación Orientada a Objetos (POO) para asegurar un código limpio, mantenible y robusto.
-
-### 1. Modularidad
-
-El código está altamente modularizado. En lugar de tener un único archivo gigante ("God Class"), la funcionalidad se ha dividido en clases pequeñas y cohesivas.
-
-- La lógica de entrada/salida (I/O) está separada de la lógica de negocio.
-- Cada parte del problema (Parte 1 y Parte 2) tiene su propio paquete, permitiendo que evolucionen de forma independiente sin romper la otra.
-
-### 2. Single Responsibility Principle (SRP) - Principio de Responsabilidad Única
-
-Cada clase tiene una única razón para cambiar:
-
-- **`FileInstructionReader`**: Su única responsabilidad es leer el archivo del disco. No sabe nada sobre cómo funciona un dial ni qué significan las instrucciones. Si cambiamos el formato del archivo o la fuente de datos (ej. base de datos), solo modificamos esta clase.
-- **`Dial`**: Su única responsabilidad es modelar el comportamiento de la caja fuerte. No sabe de dónde vienen las instrucciones (si de un archivo o de un input de usuario). Se encarga de parsear los movimientos (`L` o `R`), actualizar su estado interno y contar los ceros.
-- **`Main`**: Su única responsabilidad es inyectar las dependencias (pasar las instrucciones al Dial) e imprimir el resultado.
-
-### 3. Encapsulamiento
-
-El estado interno del objeto `Dial` está protegido.
-
-- Los atributos `state`, `zeroCount` y `movements` son `private`.
-- La lógica compleja de cómo se aplica un movimiento (`applyMovement`, `parseValue`) es `private`, exponiendo solo el método público necesario `getZeros()`. Esto define una API clara y evita que clases externas manipulen el estado del dial de forma incorrecta.
-
-### 4. Inmutabilidad (donde aplica)
-
-La clase `FileInstructionReader` está definida como un `record`, lo que la hace inmutable y concisa, ideal para portar datos o configuraciones simples como el `filePath`.
-
----
-
-_Desarrollado para la asignatura de Ingeniería de Software - Advent of Code 2025_
+- `src/main/java/software/aoc/day01/a`: Solución Parte 1 (Conteo final).
+- `src/main/java/software/aoc/day01/b`: Solución Parte 2 (Conteo paso a paso).
