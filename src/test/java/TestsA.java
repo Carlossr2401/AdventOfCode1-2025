@@ -6,7 +6,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class Tests {
+public class TestsA {
 
     private ArrayList<String> createMovements(String... moves) {
         return new ArrayList<>(List.of(moves));
