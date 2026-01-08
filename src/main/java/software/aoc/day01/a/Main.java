@@ -3,7 +3,7 @@ package software.aoc.day01.a;
 import java.io.IOException;
 
 public class Main {
-    static void main() throws IOException {
+    public static void main(String args[]) throws IOException {
         InstructionReader reader = new FileInstructionReader("src/main/resources/dialInput");
         Solver solver = new Solver(reader);
         System.out.println(solver.solve());
