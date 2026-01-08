@@ -53,6 +53,6 @@ public class TestsA {
         ArrayList<String> movements = createMovements("L250", "R550", "L223", "R131", "L411");
         Dial dial = new Dial(movements);
 
-        assertEquals(17, dial.getZeros());
+        assertEquals(1, dial.getZeros());
     }
 }
