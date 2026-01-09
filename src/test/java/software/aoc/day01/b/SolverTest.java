@@ -3,6 +3,7 @@ package software.aoc.day01.b;
 import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
+import software.aoc.day01.InstructionReader;
 import static org.junit.Assert.assertEquals;
 
 public class SolverTest {
@@ -13,7 +14,7 @@ public class SolverTest {
         // L51: Va de 50 hacia atrás... pasa por el 0 (en el paso 50) ... y termina en 99.
         // Para la Parte B, cuenta CADA vez que toca el 0.
         InstructionReader reader = () -> List.of("L51");
-        Solver solver = new Solver(reader);
+        SolverB solver = new SolverB(reader);
 
         // WHEN: Resolvemos
         int result = solver.solve();
@@ -31,7 +32,7 @@ public class SolverTest {
         // - 100 pasos más para volver a 0 (3er cero)
         // Total 250 pasos.
         InstructionReader reader = () -> List.of("R250");
-        Solver solver = new Solver(reader);
+        SolverB solver = new SolverB(reader);
 
         // WHEN: Resolvemos
         int result = solver.solve();
@@ -52,7 +53,7 @@ public class SolverTest {
         // Vamos a asumir que cuenta si ATERRIZA en 0.
         
         InstructionReader reader = () -> List.of("L50", "R10");
-        Solver solver = new Solver(reader);
+        SolverB solver = new SolverB(reader);
 
         // WHEN: Resolvemos
         int result = solver.solve();
@@ -65,7 +66,7 @@ public class SolverTest {
     public void testLandingExactlyOnZero() throws IOException {
        // GIVEN: Empezamos en 50. L50 -> llega a 0.
        InstructionReader reader = () -> List.of("L50");
-       Solver solver = new Solver(reader);
+       SolverB solver = new SolverB(reader);
        
        // WHEN: Resolvemos
        int result = solver.solve();

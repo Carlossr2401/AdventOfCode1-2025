@@ -1,13 +1,15 @@
-package software.aoc.day01.b;
+package software.aoc.day01.a;
 
 import java.io.IOException;
 import java.util.List;
 
-public class Solver {
+import software.aoc.day01.InstructionReader;
+
+public class SolverA implements software.aoc.day01.Solver {
 
     private final InstructionReader reader;
 
-    public Solver(InstructionReader reader) {
+    public SolverA(InstructionReader reader) {
         this.reader = reader;
     }
 

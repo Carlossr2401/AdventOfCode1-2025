@@ -4,43 +4,44 @@ Este proyecto contiene la solución para el **Día 1** del Advent of Code 2025. 
 
 ## Diseño y Arquitectura
 
-En este proyecto se intenta aplicar los principios SOLID y Clean Code para resolver el problema. Además se intenta aplicar patrones de diseño para resolver los diferentes problemas del AOC2025.
+En este proyecto se aplican estrictamente los principios SOLID y Clean Code, junto con patrones de diseño estratégicos para garantizar un código mantenible, extensible y testeable.
 
 ### 1. Principios SOLID
 
-El diseño se adhiere principalmente a los siguientes principios:
+- **Single Responsibility Principle (SRP)**:
+  - `ReaderFactory` y `SolverFactory`: Responsables únicamente de la creación de objetos.
+  - `FileInstructionReader`: Responsable de la lectura de archivos.
+  - `Dial`: Encapsula toda la lógica del dominio del problema.
+  - `SolverA` / `SolverB`: Coordinan la lógica específica para cada parte del problema.
+- **Open/Closed Principle (OCP)**:
+  - El sistema es extensible mediante interfaces. Se pueden agregar nuevos tipos de `InstructionReader` o nuevas implementaciones de `Solver` (por ejemplo, para una Parte C) sin modificar el código existente en `Main` o en las fábricas base (simplemente extendiendo la lógica).
+- **Liskov Substitution Principle (LSP)**:
+  - `SolverA` y `SolverB` son intercambiables a través de la interfaz `Solver`.
+  - `FileInstructionReader` puede ser sustituido por cualquier otra implementación de `InstructionReader` (ej. `NetworkInstructionReader`) sin romper el sistema.
+- **Interface Segregation Principle (ISP)**:
+  - Las interfaces `Solver` e `InstructionReader` son específicas y no obligan a las clases a implementar métodos que no usan.
+- **Dependency Inversion Principle (DIP)**:
+  - Los módulos de alto nivel (`Main`, `SolverA`...) dependen de abstracciones (`Solver`, `InstructionReader`), no de implementaciones concretas.
 
-- **Single Responsibility Principle (SRP)**: Cada clase tiene una responsabilidad única y claramente definida.
-  - `FileInstructionReader`: Se encarga **únicamente** de la persistencia/lectura de datos. Desconoce la lógica de negocio.
-  - `Dial`: Encapsula la **lógica de dominio** (el comportamiento de la caja fuerte). Desconoce el origen de los datos.
-  - `Solver`: **Coordinador** del caso de uso. Orquesta la interacción entre la lectura de datos y el dominio para producir una solución.
-  - `Main`: Punto de entrada minimalista. Solo es responsable de iniciar la aplicación invocando al `Solver`.
-- **Dependency Inversion Principle (DIP)**: `Solver` no depende de la clase concreta `FileInstructionReader`, sino de la abstracción `InstructionReader`. Esto permite cambiar el origen de los datos (archivo, base de datos, API) sin tocar la lógica de resolución.
-- **Open/Closed Principle**: Gracias a la interfaz `InstructionReader`, el sistema está abierto a la extensión (nuevas formas de leer datos) pero cerrado a la modificación (`Solver` no cambia).
+### 2. Patrones de Diseño
 
-### 2. Clean Code (Código Limpio)
+Se han implementado patrones de diseño clásicos para resolver problemas de creación y comportamiento:
 
-Se han seguido prácticas de Clean Code para asegurar que el código sea autoexplicativo:
+- **Strategy Pattern (Estrategia)**:
 
-- **Nombres Expresivos**: Variables y métodos como `applyMovement`, `zeroCount` o `movements` revelan claramente su intención sin necesidad de comentarios.
-- **Funciones Pequeñas**: Métodos como `parseValue` extraen lógica compleja de bajo nivel, manteniendo el flujo principal de `applyMovement` legible y de alto nivel.
-- **Evitar "Magic Numbers"**: El uso de constantes numéricas se explica por el contexto del dominio (ej. módulo 100 para un dial de 0-99).
+  - La interfaz `Solver` define una estrategia común (`solve`).
+  - `SolverA` y `SolverB` son estrategias concretas que encapsulan la lógica de resolución para la Parte A y la Parte B respectivamente.
+  - El cliente (`Main`) utiliza la interfaz `Solver` sin acoplarse a la lógica específica.
 
-### 3. Gestión del Flujo de Datos
+- **Factory Pattern (Fábrica)**:
 
-El flujo de información es lineal y unidireccional, simplificando la trazabilidad:
+  - `SolverFactory`: Centraliza la creación de los Solvers. Basado en un parámetro ("A" o "B"), decide qué estrategia instanciar. Esto desacopla al `Main` de conocer las clases concretas.
+  - `ReaderFactory`: Abstrae la creación del lector de instrucciones, facilitando cambios futuros en la fuente de datos.
 
-1.  **Input (I/O)**: `InstructionReader` (implementado por `FileInstructionReader`) provee la lista de instrucciones.
-2.  **Procesamiento (Domain)**: `Dial` recibe la lista inmutable de instrucciones y calcula el resultado.
-3.  **Output**: `Solver` orquesta el proceso y devuelve la solución final.
+- **Dependency Injection**:
+  - Las dependencias (como `InstructionReader`) se inyectan en los constructores de los Solvers, en lugar de ser creadas internamente.
 
-### 4. Estructuras de Datos y Algoritmos
-
-- **`List<String>`**: Se eligió `ArrayList` para almacenar las instrucciones debido a que el orden de ejecución es crítico y el acceso secuencial es performante.
-- **Aritmética Modular**: La fórmula `(state + valor + 100) % 100` maneja el dial circular.
-- **Record**: `FileInstructionReader` es un `record` inmutable.
-
-### 5. Diagrama de Clases
+### 3. Diagrama de Arquitectura
 
 ```mermaid
 classDiagram
@@ -48,9 +49,28 @@ classDiagram
         +main() void$
     }
 
+    class SolverFactory {
+        +createSolver(part: String, reader: InstructionReader) Solver$
+    }
+
+    class ReaderFactory {
+        +createReader(filePath: String) InstructionReader$
+    }
+
     class Solver {
+        <<Interface>>
+        +solve() int
+    }
+
+    class SolverA {
         -reader: InstructionReader
-        +Solver(reader: InstructionReader)
+        +SolverA(reader: InstructionReader)
+        +solve() int
+    }
+
+    class SolverB {
+        -reader: InstructionReader
+        +SolverB(reader: InstructionReader)
         +solve() int
     }
 
@@ -61,31 +81,29 @@ classDiagram
 
     class FileInstructionReader {
         <<Record>>
-        +filePath: String
         +readAllInstructions() List~String~
     }
 
-    class Dial {
-        -movements: List~String~
-        -state: int
-        -zeroCount: int
-        +Dial(movements: List~String~)
-        +getZeros() int
-        -applyAllMovements() void
-        -applyMovement(movement: String) void
-        -parseValue(movement: String) int
-    }
+    Main ..> SolverFactory : usa
+    Main ..> ReaderFactory : usa
+    SolverFactory ..> Solver : crea
+    SolverFactory ..> SolverA : instancia
+    SolverFactory ..> SolverB : instancia
 
-    Main ..> Solver : crea
-    Main ..> FileInstructionReader : crea
-    Solver --> InstructionReader : depende de
+    SolverA ..|> Solver : implementa
+    SolverB ..|> Solver : implementa
+
+    SolverA --> InstructionReader : usa
+    SolverB --> InstructionReader : usa
+
     FileInstructionReader ..|> InstructionReader : implementa
-    Solver ..> Dial : usa
+    ReaderFactory ..> instructionReader : crea
 ```
 
-## Estructura del Proyecto
+### 4. Estructura del Proyecto
 
-Organización por paquetes para separar las dos partes del desafío:
+La estructura de paquetes refleja la separación de responsabilidades:
 
-- `src/main/java/software/aoc/day01/a`: Solución Parte 1 (Conteo final).
-- `src/main/java/software/aoc/day01/b`: Solución Parte 2 (Conteo paso a paso).
+- `software.aoc.day01`: Interfaces y Fábricas comunes (`Solver`, `InstructionReader`, `Factories`).
+- `software.aoc.day01.a`: Implementación concreta para la Parte A (`SolverA`, `Dial` específico).
+- `software.aoc.day01.b`: Implementación concreta para la Parte B (`SolverB`, `Dial` específico).

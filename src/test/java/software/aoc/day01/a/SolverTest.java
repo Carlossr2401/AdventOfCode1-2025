@@ -3,6 +3,7 @@ package software.aoc.day01.a;
 import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
+import software.aoc.day01.InstructionReader;
 import static org.junit.Assert.assertEquals;
 
 public class SolverTest {
@@ -11,7 +12,7 @@ public class SolverTest {
     public void testNoMovements() throws IOException {
         // GIVEN: Un lector que no devuelve instrucciones
         InstructionReader emptyReader = () -> List.of();
-        Solver solver = new Solver(emptyReader);
+        SolverA solver = new SolverA(emptyReader);
 
         // WHEN: Resolvemos
         int result = solver.solve();
@@ -24,7 +25,7 @@ public class SolverTest {
     public void testSingleMovementToZero() throws IOException {
         // GIVEN: Empezamos en 50. L50 nos lleva a 0.
         InstructionReader reader = () -> List.of("L50");
-        Solver solver = new Solver(reader);
+        SolverA solver = new SolverA(reader);
 
         // WHEN: Resolvemos
         int result = solver.solve();
@@ -39,7 +40,7 @@ public class SolverTest {
         // R50 -> llega a 0 (100 % 100 = 0). 
         // R100 -> da una vuelta completa y vuelve a 0.
         InstructionReader reader = () -> List.of("R50", "R100");
-        Solver solver = new Solver(reader);
+        SolverA solver = new SolverA(reader);
 
         // WHEN: Resolvemos
         int result = solver.solve();
@@ -54,7 +55,7 @@ public class SolverTest {
         // L50 -> llega a 0.
         // L100 -> da euna vuelta completa y vuelve a 0.
         InstructionReader reader = () -> List.of("L50", "L100");
-        Solver solver = new Solver(reader);
+        SolverA solver = new SolverA(reader);
 
         // WHEN: Resolvemos
         int result = solver.solve();
@@ -69,7 +70,7 @@ public class SolverTest {
         // R10 -> 60.
         // L20 -> 40.
         InstructionReader reader = () -> List.of("R10", "L20");
-        Solver solver = new Solver(reader);
+        SolverA solver = new SolverA(reader);
 
         // WHEN: Resolvemos
         int result = solver.solve();
